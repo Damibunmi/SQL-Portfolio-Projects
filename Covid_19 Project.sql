@@ -77,14 +77,36 @@ FROM dbo.CovidDeaths
 SELECT d.location,
        YEAR(v.[date]) AS Year,
        SUM(d.population) AS TotalPopulation,
-       SUM(v.total_vaccinations) AS TotalVaccinated 
+       SUM(v.people_fully_vaccinated) AS TotalVaccinated 
 FROM dbo.CovidDeaths d
 JOIN dbo.CovidVaccinations v 
     ON d.iso_code = v.iso_code
 GROUP BY d.[location], YEAR(v.[date])
     ORDER BY 1,2
 
+--- PERCENTAGE OF POPULATION LESS LIKELY TO GET INFECTED
+WITH SecuredPopulation AS
+(
+    SELECT d.location AS Location,
+       YEAR(v.[date]) AS Year,
+       SUM(d.population) AS TotalPopulation,
+       SUM(v.total_vaccinations) AS TotalVaccine,
+       SUM(v.people_fully_vaccinated) AS TotalVaccinated 
+FROM dbo.CovidDeaths d
+JOIN dbo.CovidVaccinations v 
+    ON d.iso_code = v.iso_code
+GROUP BY d.[location], YEAR(v.[date])
+)
+SELECT Location, 
+       Year, 
+       TotalPopulation, 
+       TotalVaccine, 
+       TotalVaccinated,
+       (TotalVaccinated/TotalPopulation)*100 AS PercentagePopulationSafe
+FROM SecuredPopulation
+ORDER BY 'PercentagePopulationSafe' DESC
 
+    
 
 
 
